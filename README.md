@@ -1,120 +1,122 @@
-# Simple and Practical Zero Knowledge Proof Explanation 
+# 从简单和实用出发，一文读懂零知识证明
 
 ![SimpleZkpCover](media/SimpleZkpCover.png)
 
-You've presumably read some articles trying to explain the Zero-Knowledge technology but are still confused about its nature due to the incompatibleness between those articles' main arguments and your aha moment:
+你之前是否阅读过一些零知识证明的文章，但仍一头雾水？这些文章可能：
 
-- Too naive to explain in a deeper perspective, i.e., only employ some physical or real-world games or stories to exemplify ZK, without any insight into how it is implemented in practice and why it works.
-- Too overwhelming for a beginner to understand, filled with plenty of cryptography jargon, mathematical formulas, academic papers, etc. 
+- 只以故事和童话作例子来论述ZKP，无法深入其本质。
+- 内含大量密码学术语，数学公式，学术论文等，对初学者而言过于复杂。
 
-This article will provide a simple yet insightful elaboration for ZK in math, cryptography, and coding, with minimal prerequisite knowledge.
+本文提供了对ZKP简明扼要的概述，并从数学、密码学和编程角度进一步阐述ZKP的核心要素。
 
-# Proof of colours for colour blindness 
-How to tell colour-blind people that two balls of distinct colours are literally different? It's not complicated:
+# 向色盲提供颜色证明
+如何向色盲患者证明两个球的颜色确实是不同的？这其实并不复杂：
 
-Let him hold those two balls in hand, hide behind his body, and swap their position randomly. Then he shows you the balls, and you tell him whether the balls were swapped.
+让他在手里握住两个球，背到背后，然后随机选择交换或不交换两个球的位置，再展示给你看，你告诉他这两个球的位置是否有变化。
 
-From his perspective, you can answer correctly by guessing. But repeat this process 100 or even more times: if you're always able to deliver the correct answer, the probability of guessing all by luck is negligible. Consequently, we can convince our colour-blind friend we are not lying about the truth that these two balls are different in colour and our ability to perceive and distinguish.
+在他看来，你可以通过瞎蒙来完成一次证明。不过，如果成千上万次地重复这个过程：如果你总是能说出正确答案，那么靠纯蒙的方式来保持一直正确的概率，是小到可以忽略的。因此可以通过这种方式来向色盲患者证明：两个球的颜色确实不一样，并且我们也有感知和区分的能力。
 
 ![Proof of colours](media/ProofOfColour.jpg)
 
-The proving method above is precisely a kind of zero-knowledge proof:
-- Verifier never learns any knowledge of colour because he's still not able to distinguish them after the test.
-- It's probabilistic proof instead of deterministic proof.
-- It's interactive and multi-round. There are also non-interactive ZKP schemes with advanced transformation techniques.
+上述证明过程是典型的零知识证明：
+- 验证者无法在证明过程中获得任何关于颜色的知识，因为经过验证过程后他依然没有区分颜色的能力。
+- 该验证过程是概率性的而非决定性的。
+- 该过程是交互式的，需要多轮交互。不过，零知识证明中也有许多协议，通过高级技巧将证明过程转化成了非互动式的。
 
-# Proof of Knowledge
-We've seen an example of ZKP in the physical world. Now let's delve into cyberspace.
+# 掌握知识的证明
+我们已经分享了一种现实世界中的零知识证明的例子，接下来再来看一下在二进制世界中如何实现零知识证明。
 
-Arthur is Elon's friend, and he knows Elon's phone number. Betty doesn't know it, but Arthur wants to prove that he does without disclosing it to Betty, so how to do it?
+Arthur是Elon的朋友，并且知道对方的手机号。Betty不知道Elon的号码。如果Arthur想要向Betty证明他知道，但又不想泄露号码，应该怎么实现呢？
 
 ![ProofOfKnowledge](media/ProofOfKnowledge.jpg)
 
+一种不成熟的方案是，Elon发布自己电话号码的哈希，Arthur通过一个程序输入哈希的原像，程序进行运算并检查结果。这个方法有一些致命的缺陷：
 
-A naive way is that Elon publishes a hash of his phone number, and Arthur enters the pre-image of that hash via a programme for hash calculation check. But this method is fundamentally flawed due to:
+- 根据哈希，Betty可以通过暴力破解的方式得到原像，能破解出来的概率是不可忽略的，而且得到的结果几乎是确定性的。
+- Arthur必须向该程序输入原像。如果程序在Arthur的电脑上，Betty就会对此有疑问：我怎么知道你有没有作弊，你的电脑也许会一直声称你的证明是对的？
+- 如果程序在Betty的电脑上运行，Arthur也会担心，自己输入的信息会不会被窃取，即使程序肉眼可见的代码中并没有窃取信息的命令。
+- 因为无法将程序分开在不同的环境中运行，这个信任问题是难以解决的。
 
-- Betty can brute-force the pre-image according to its hash to get the nearly deterministic single result with non-negligible odds.
-- Arthur must input the pre-image to that programme. Betty will suspect it will always return a positive pass if it's on Arthur's computer. 
-- On the other hand, Arthur is afraid that Betty will steal the knowledge she typed if it's on Betty's side. 
-- As you can't separate the runtime to let Arthur and Betty run different codes on their own machines respectively, this trust issue is hard to solve.
+常规的方法在这里碰壁了，是时候让零知识证明出场了！
 
-So the regular easy way won't work. Time for ZKP to show up.
+# 基于密码学的零知识证明的实现方案
+在此我会用零知识证明中的Sigma Protocol来解决问题，因为它比较简单。并且，为了简洁和易于理解，这里不会使用严格的密码学和数学中的定义、术语及推导过程等。
 
-# Implementation of a Cryptography Based ZKP
-I'm gonna use a relatively simple ZKP scheme named Sigma Protocol here to solve this problem. Also, for the sake of simplicity and comprehensibility, rigorous definition / terminology / inference of cryptography or arithmetic won't be adopted here.
-
-## Core Procedures
-To prove one has certain knowledge with ZKP, we can do it by the following procedures:
+## 核心流程
+使用零知识证明证明一个人有特定的知识，我们采取如下办法：
 
 ![SigmaProtocol](media/SigmaProtocol.jpg)
 
-1. Set a finite group G of order `P` and its generator `g`. We can ignore what these weirdos mean first.
-2. With the terms defined above, a third party who has or has access to the knowledge(denoted by w) publishes the encrypted knowledge `h = g^w (mod P)`.
-3. Prover starts the proving procedure. Generate a random number r, evaluate `a = g^r`, and send value `a` to Verifier.
-4. Verifier generates a random number `e` and sends it to Prover.
-5. Prover evaluates z = r + ew and sends it to Verifier.
-6. Verifier checks `g^z == a·h^e(mod P)`. If true, Prover has the claimed knowledge.
 
-Well, the protocol just finished here! It's short, but still seems a little bit overwhelming with these mathematical denotations. But it will be ok to have an overview first and delve into the details later.
+1. 定义一个`P`阶的有限群及其生成元`g`。我们可以暂时忽略这些奇怪的名词具体什么意思。
+2. 根据上面的定义，某个拥有知识或能接触到知识的第三方，将知识（记为`w`）通过 `h = g^w (mod P)`的方式加密后，将h发布出去。
+3. 证明者启动零知识证明流程。生成一个随机数r，计算`a = g^r`，并将`a`发送给验证者。
+4. 验证者生成一个随机数`e`并发送给证明者。
+5. 证明者计算`z = r + ew`并发送给验证者。
+6. 验证者检查`g^z == a·h^e(mod P)`。如果为真，则验证者确实掌握其声称的知识。
 
-## Programme Example
-I wrote an easy toy programme for Sigma Protocol in Python. You can cosplay the 3rd party knowledge publisher who defines the knowledge and the Prover with or without the exact knowledge waiting to be verified. It's pretty helpful for understanding the above procedures. 
+好啦，该证明协议到此就结束了！非常简短，但你仍可能对上面的一些数学运算感到困惑，但这不要紧，我们先有个大概印象再深入理解。
+
+## 示例程序
+我用Python写了一个简化的Sigma Protocol的示范程序，对理解上述过程有很大帮助。在程序中，你既可以扮演定义和发布知识的第三方，也可以成为掌握了知识或没有掌握知识的证明者。
 
 Just `python example.py`.
 
-## Mathematical Principle
-The core working mechanism is the hardness of Discrete Logarithm: when P is a big prime number, given h, it's hard to find w such that `h = g^w(mod P).` This property also applies to similar equations above.
+## 数学原理
+这套流程背后的核心数学原理是离散对数难题：当P是一个很大的质数时，对于给定的`h`，很难找到满足`h = g^w(mod P)`的`w`。该原理适用于上面所有类似的式子。
 
-Let's take it step by step:
-Encrypted knowledge `h = g^w (mod P).` Here we encrypted the knowledge into a form that is hard to brute-force. And due to the nature of modulo operation, there's no definite single solution even if it's "compromised". This means it's infeasible for the Prover to cheat or for the Verifier to obtain knowledge by cracking it.
+我们来一步一步解析下：
+经过加密的知识`h = g^w (mod P)`，是难以被暴力破解的。由于求余运算的特点，即使被破解了也不具备单一确定解。这意味着对证明者而言，通过暴力破解来作弊，欺骗验证者，是不可行的。
 
-Then, we take steps 3,4,5 as a whole to understand why they are exchanging random numbers:
+然后我们将3，4，5步作为一个整体来看一下他们为什么要交换这些随机数：
 
-I. Prover doesn't want to reveal his secret knowledge, so he must encrypt that value with randomness to lock it up. The Verifier also needs to transform it to a checkable one to verify its validity while maintaining its secrecy by adding some randomness from Verifier. 
+I. 证明者并不想暴露其秘密，所以他必须用随机数包裹一下将其隐藏起来。而验证者也需要通过添加一些随机数，让该知识可被自己验证的同时防止证明者作弊，而且不会窥探到证明者的秘密。
 
-II. If the Verifier sends the random number `e` first(i.e., swap steps 3 & 4), it's obvious Prover can make up `a = g^z·h^-e` such that it satisfies the final check even without knowing the knowledge. So Prover must first send a commitment(a=g^r) but not the random number r itself to avoid the cheating scenario, also disabling the way for the Verifier to extract knowledge w by evaluating `w = (z - r)/e`.
+II. 如果验证者先发送了随机数`e`（即将3和4步交换一下），很明显，证明者可以通过编造`a = g^z·h^-e`来在最终检查中欺骗验证者，即使没有知识也可以通过。所以证明者必须先手发送一个承诺(a=g^r)，但非r本身，来避免可作弊场景，同时不让验证者通过`w = (z - r)/e`提取到秘密。
 
-III. After receiving the commitment, Verifier sends a random number `e` as a challenge to Prover. It's not encrypted as no info can be inferred from it or further derivatives. Then Prover returns z = r + ew to Verifier. Verifier runs the final equality check `g^z= g^(r+ew)= g^r·(gw)^e= a·h^e`.
+III. 在收到承诺后，证明者向验证者发送随机数`e`。由于其本身或者其衍生物无法泄露任何一方的信息，这个数不需要加密。之后证明者计算`z = r + ew`并将z发送给验证者。验证者最终通过检查`g^z= g^(r+ew)= g^r·(gw)^e= a·h^e`来确定证明者是否掌握知识。
 
-With this interlacing weave structure, we got 3 sophisticated properties: 
+通过这种往返交错的结构，我们收获了三个性质：
 
-**Completeness**:
-The Prover will pass the verification if and only if he entered the correct knowledge.
+**完备性**:
+当且仅当证明者输入正确知识，验证才能通过。
 
-**Soundness**:
-The Prover will fail to pass the verification if and only if he entered a wrong knowledge.
+**可靠性**:
+当且仅当证明者输入错误知识，验证才会失败。
 
-**Zero-knowledge(-ness)**:
-Verifier won't obtain any knowledge during the verification.
+**零知识性**:
+验证者无法在验证过程中获取任何知识。
 
-They are just the very core essences of ZKP. Marvellous and melodramatic, isn't it? Congrats, you've made it this far, where I can assume you just entered a panoramic view of Zero-knowledge space. Have fun!
+上述三点即零知识证明的核心特性。通过数学和密码学，我们构建出了一套光怪陆离的证明体系。恭喜你一路走了这么远，现在应该已经可以说正式迈入了富丽堂皇又奥妙无穷的ZKP圣殿。
+Have fun!
 
-## Further Reading
+## 进一步了解
 
-### Simulator & Zero-knowledge(-ness)
-Let's consider some supernatural forces. A Prover, who has the ability to predict or tamper with Verifier's random number `e` before its generation, we call him the Simulator.
+### 模拟器和零知识性
+我们现在来考虑一些魔幻场景。如果一个证明者具有预言或篡改验证者生成的随机数的超能力，我们称其为模拟器。
 
 ![Simulator](media/Simulator.jpg)
 
-As in term II above, this ability literally means the Simulator is able to compose the commitment `a` to deceive Verifier. So whatever the input from the Simulator is, the Verifier will always accept it as true.
+设想，模拟器在验证者的随机数`e`生成前就对其进行了篡改，确保其生成后是自己预设的值。根据上面II所说，这种能力使模拟器能编造承诺`a`来欺骗验证者。不论模拟器的输入是什么，验证者总会得出结论模拟器具有知识，然而实际上他并没有。
 
-Easy to see, in such a manner, Verifier can't obtain any knowledge in this protocol, i.e., the Zero-knowledge property holds true:
-Perfect zero-knowledge <== ∀ Simulator S s.t. S(x) is indistinguishable from a real proof execution, where S(x):
-Choose random `z` and `e`, and let `a = g^z·h^-e,` where (a,e,z) have the same distribution as in a real run random values satisfying `g^z=a·h^e.`
+显然，经过这种思想实验我们可以得出结论，验证者无法在该零知识证明协议中获取任何知识，也即其零知识性是成立的：
+零知识性 <== ∀模拟器S，使得S(x)与真实的协议执行不可区分，其中S(x)：
+选择随机的`z`和`e`，令`a = g^z·h^-e`，其中(a,e,z)的分布与真实的随机数环境一致并满足`g^z=a·h^e`。
 
-### Extractor & Soundness
-Another supernatural force comes into play, the Extractor, with the ability to rewind time. She acts as Verifier vs. a normal Prover.
+### 抽取器和可靠性
+再来想象一下另一种超能力者——抽取器，具有时光倒流的能力。不过这次是抽取器作为验证者，面对一个正常的证明者。
 
-When the protocol finishes, Extractor launches her time rewind attack to dial back the clock to the beginning of the protocol, with `(z, e, a)` in the previous execution. Now the protocol replays, but Extractor sends a different random `e'` to Prover, who is not a time traveller so still outputs the same random `r`, also `a = g^r`.
+当协议结束时，抽取器发起时间倒流，回到协议的起点，并持有上一轮得到的`(z, e, a)` 。现在，协议重新执行一遍。由于证明者没有超能力无法进行时间旅行只能在固定的时间线上做确定的事，他又生成了一个一模一样的随机数`r`以及承诺`a = g^r`，而抽取器则可以生成新的随机数`e'`给证明者。
 
 ![Extractor](media/Extractor.jpg)
 
-Now, Extractor has:
-`g^z= a·h^e, g^z'=a·h^e => g^(z-z') = h(e-e') `=> Encrypted Knowledge `h = g^((z-z')/(e-e'))` => Knowledge `w = (z-z')/(e-e')`.
+现在，抽取器获得了：
+`g^z= a·h^e, g^z'=a·h^e => g^(z-z') = h(e-e') `=> 加密后的知识 `h = g^((z-z')/(e-e'))` => 知识 `w = (z-z')/(e-e')`.
 
-Obviously, an Extractor can always extract knowledge as long as Prover owns it, i.e., the Soundness property holds true:
-Soundness <==  ∀ extractor E that given any h and pair of transcripts `(a,e,z)`,`(a,e',z')` with `e≠e'` outputs `w` s.t. (h,w) ∈ R.
+显然，只要证明者真的掌握了知识，抽取器总是可以将其抽取出来，也即完备性成立：
+完备性 <== ∀抽取器E，对给定的任何h，在掌握`(a,e,z)`,`(a,e',z')`且`e≠e'`的情况下，都能输出`w` s.t. (h,w) ∈ R.
 
-### Completeness
-There's no need to prove Completeness with any special character as this holds true:
+### 完备性
+完备性不需要任何特殊角色来证明，因为：
 `g^z` = `g^r+ew` = `g^r·(g^w)^e` = `a·h^e`.
+
