@@ -1,5 +1,7 @@
 # Simple and Practical Zero Knowledge Proof Explanation 
 
+![SimpleZkpCover](media/SimpleZkpCover.png)
+
 You've presumably read some articles trying to explain the Zero-Knowledge technology but are still confused about its nature due to the incompatibleness between those articles' main arguments and your aha moment:
 
 - Too naive to explain in a deeper perspective, i.e., only employ some physical or real-world games or stories to exemplify ZK, without any insight into how it is implemented in practice and why it works.
