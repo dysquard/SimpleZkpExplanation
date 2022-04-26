@@ -99,7 +99,8 @@ Let's consider some supernatural forces. A Prover, who has the ability to predic
 As in term II above, this ability literally means the Simulator is able to compose the commitment `a` to deceive Verifier. So whatever the input from the Simulator is, the Verifier will always accept it as true.
 
 Easy to see, in such a manner, Verifier can't obtain any knowledge in this protocol, i.e., the Zero-knowledge property holds true:
-Perfect zero-knowledge <== ∀ Simulator S s.t. S(x) is indistinguishable from a real proof execution, where S(x):
+
+Zero-knowledge <== ∀ Simulator S s.t. S(x) is indistinguishable from a real proof execution, where S(x):
 Choose random `z` and `e`, and let `a = g^z·h^-e,` where (a,e,z) have the same distribution as in a real run random values satisfying `g^z=a·h^e.`
 
 ### Extractor & Soundness
@@ -113,6 +114,7 @@ Now, Extractor has:
 `g^z= a·h^e, g^z'=a·h^e => g^(z-z') = h(e-e') `=> Encrypted Knowledge `h = g^((z-z')/(e-e'))` => Knowledge `w = (z-z')/(e-e')`.
 
 Obviously, an Extractor can always extract knowledge as long as Prover owns it, i.e., the Soundness property holds true:
+
 Soundness <==  ∀ extractor E that given any h and pair of transcripts `(a,e,z)`,`(a,e',z')` with `e≠e'` outputs `w` s.t. (h,w) ∈ R.
 
 ### Completeness
