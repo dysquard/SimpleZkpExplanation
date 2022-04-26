@@ -29,10 +29,10 @@ class Verifier:
         global e
         e = SystemRandom().randrange(P)
         print('Verifier:')
-        print('random number b = ',e,', b -----> Prover','\n') 
+        print('Random number e = ',e,', e -----> Prover','\n') 
 
     def verify_step2(self):
-        print('Verifier:'+'\n'+'Checking if pow(g,z,P) == (a * pow(encryptedKnowledge,b,P)) % P:')
+        print('Verifier:'+'\n'+'Checking if g^z == a·h^e(mod P):')
         
         if pow(g,z,P) == (a * pow(h,e,P)) % P:
             print('Accept! Prover knows the knowledge','\n')
@@ -50,14 +50,14 @@ class Prover:
         global a
         a = pow(g,self.r,P) 
         print('Prover:')
-        print('random number r = ',self.r) 
-        print('a = g ** r % p = ',a,', a -----> Verifier','\n') 
+        print('Random number r = ',self.r) 
+        print('a = g^r(mod P) = ',a,', a -----> Verifier','\n')
             
     def prove_step2(self):
         global z
         z = self.r + e * self.k
         print('Prover:')
-        print('z = r + b * knowledge_to_verify = ',a,', z -----> Verifier','\n') 
+        print('z = r + ew = ',a,', z -----> Verifier','\n') 
 
     
 
